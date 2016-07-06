@@ -3,12 +3,19 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
+  	xmlns:tx="http://www.springframework.org/schema/tx"
+  	xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans  
                         http://www.springframework.org/schema/beans/spring-beans-3.1.xsd  
                         http://www.springframework.org/schema/context  
                         http://www.springframework.org/schema/context/spring-context-3.1.xsd  
                         http://www.springframework.org/schema/mvc  
-                        http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+                        http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+                        http://www.springframework.org/schema/tx 
+                        http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+                        http://www.springframework.org/schema/aop 
+                        http://www.springframework.org/schema/aop/spring-aop-3.1.xsd  
+                        ">
 	<!-- 自动扫描 -->
 	<context:component-scan base-package="com.flong.*" />
 	<!-- 引入配置文件 -->
@@ -45,7 +52,8 @@
 	</bean>
 	
 	
-	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" init-method="init" lazy-init="true">
+	<!-- 操作数据库删除，修改，添加的数据源 -->
+	<bean id="writeDataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" init-method="init" lazy-init="true">
 		<property name="driverClassName" value="${jdbc.driver}" />
 		<property name="url" value="${jdbc.url}" />
 		<property name="username" value="${jdbc.username}" />
@@ -79,6 +87,71 @@
 		<property name="timeBetweenEvictionRunsMillis" value="${timeBetweenEvictionRunsMillis}" />
 	</bean>
 
+
+
+	<!-- 操作数据库读的数据源 -->
+	<bean id="readDataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" init-method="init" lazy-init="true">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<!-- 初始化连接大小 -->
+		<property name="initialSize" value="${jdbc.initialSize}" />
+		<!-- 连接池最大数量 -->
+		<property name="maxActive" value="${jdbc.maxActive}" />
+		<!-- 连接池最小空闲 -->
+		<property name="minIdle" value="${jdbc.minIdle}" />
+		<!-- 获取连接最大等待时间 -->
+		<property name="maxWait" value="${jdbc.maxWait}" />
+		<!-- -->
+		<property name="defaultReadOnly" value="true" />
+		<property name="proxyFilters">
+			<list>
+				<ref bean="statFilter" />
+			</list>
+		</property>
+		<property name="filters" value="${druid.filters}" />
+		<property name="connectionProperties" value="password=${password}" /> 
+ 		<property name="passwordCallback" ref="dbPasswordCallback" />  
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<property name="validationQuery" value="SELECT 'x'" />
+		<property name="timeBetweenLogStatsMillis" value="60000" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${minEvictableIdleTimeMillis}" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${timeBetweenEvictionRunsMillis}" />
+	</bean>
+
+
+	<!--利用AbstractRoutingDataSource实现动态数据源切换  -->
+	<bean id="dataSource" class="com.flong.utils.persistence.DynamicChooseDataSource" lazy-init="true">
+		<description>数据源</description>
+		<property name="targetDataSources">
+			<map key-type="java.lang.String" value-type="javax.sql.DataSource">
+				<!-- write -->
+				<entry key="write" value-ref="writeDataSource" />
+				<!-- read -->
+				<entry key="read" value-ref="readDataSource" />
+			</map>
+		</property>
+		<!-- 
+			从org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource这个类里面可以看到
+			defaultTargetDataSource这个对象，根据自己需求的情况默认的情况给一个默认的数据源.
+		 -->
+		<property name="defaultTargetDataSource" ref="writeDataSource" />
+		<property name="methodType">
+			<map key-type="java.lang.String">
+				<!-- read -->
+				<entry key="read" value=",get,select,count,list,query" />
+				<!-- write -->
+				<entry key="write" value=",add,insert,create,update,delete,remove," />
+			</map>
+		</property>
+	</bean>
+
+
 	<!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
@@ -101,5 +174,35 @@
 		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource" />
 	</bean>
+
+
+	<!-- 配置事务通知属性 -->  
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">  
+        <!-- 定义事务传播属性 -->  
+        <tx:attributes>  
+            <tx:method name="insert*" propagation="REQUIRED" />  
+            <tx:method name="update*" propagation="REQUIRED" />  
+            <tx:method name="edit*" propagation="REQUIRED" />  
+            <tx:method name="save*" propagation="REQUIRED" />  
+            <tx:method name="add*" propagation="REQUIRED" />  
+            <tx:method name="new*" propagation="REQUIRED" />  
+            <tx:method name="set*" propagation="REQUIRED" />  
+            <tx:method name="remove*" propagation="REQUIRED" />  
+            <tx:method name="delete*" propagation="REQUIRED" />  
+            <tx:method name="change*" propagation="REQUIRED" />  
+            <tx:method name="get*" propagation="REQUIRED" read-only="true" />  
+            <tx:method name="find*" propagation="REQUIRED" read-only="true" />  
+            <tx:method name="load*" propagation="REQUIRED" read-only="true" />  
+            <tx:method name="*" propagation="REQUIRED" read-only="true" />  
+        </tx:attributes>  
+    </tx:advice>  
+    
+    
+     <!-- 配置事务切面 -->  
+    <aop:config>  
+        <aop:pointcut id="serviceOperation" expression="execution(* com.flong.service.*.*(..))" />  
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation" />  
+    </aop:config>  
+
 
 </beans>
