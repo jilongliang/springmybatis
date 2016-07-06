@@ -70,9 +70,7 @@
         <property name="resourceLoaderPath" value="/WEB-INF/jsp/"/>
     </bean>
 
-	<!-- 使用注解的包，包括子集 -->
-	<context:component-scan base-package="com.hin.controller" />
-
+	 
 	<bean id="viewResolver" class="org.springframework.web.servlet.view.velocity.VelocityViewResolver">
         <property name="cache" value="true"/>
         <property name="prefix" value=""/>
