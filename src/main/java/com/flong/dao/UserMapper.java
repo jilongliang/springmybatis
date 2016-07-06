@@ -1,12 +1,14 @@
 package com.flong.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.SelectProvider;
 
 import com.flong.pojo.entity.User;
 import com.flong.pojo.vo.UserVo;
 import com.flong.service.impl.UserServiceImpl;
+import com.github.pagehelper.Page;
 
 public interface UserMapper {
 	/****
@@ -78,6 +80,11 @@ public interface UserMapper {
 	 */
 	@SelectProvider(type = UserServiceImpl.class, method = "deleteSql")
 	String deleteSql(String id);
+
+	
+	
+	
+	Page<User> query(Map<String, Object> params);
 	 
 	
 	

@@ -1,18 +1,22 @@
 package com.flong.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.jdbc.SQL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.flong.BaseService;
 import com.flong.dao.UserMapper;
 import com.flong.pojo.entity.User;
 import com.flong.pojo.vo.UserVo;
 import com.flong.service.UserService;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends BaseService  implements UserService {
 
 	@Autowired
 	private UserMapper userMapper;
@@ -96,7 +100,7 @@ public class UserServiceImpl implements UserService {
 	
 	/**
 	 * 
-	 * @param user 这个是vo传值.#的字段要和vo实体一直才可以能获取到值.
+	 * @param user 这个是vo传值.#的字段要和vo实体一致才可以能获取到值.
 	 * @return
 	 */
 	
@@ -125,6 +129,24 @@ public class UserServiceImpl implements UserService {
 		    DELETE_FROM("user");
 		    WHERE("ID = #{id}");
 		  }}.toString();
+	}
+
+	
+	
+	
+	/****
+	 * ==============================================================整合angular和pagehelper分页==================================
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public PageInfo<?> query(Map<String, Object> params) {
+		
+		this.startPage(params);
+		Page<User> list = userMapper.query(params);
+		return new PageInfo<User>(list);
+		
+		
 	}
 
 

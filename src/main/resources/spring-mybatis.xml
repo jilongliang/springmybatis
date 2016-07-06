@@ -16,26 +16,74 @@
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="location" value="classpath:jdbc.properties" />
 	</bean>
-	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" lazy-init="false">
+	
+	<!-- <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" lazy-init="false">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		初始化连接大小
+		<property name="initialSize" value="${jdbc.initialSize}"></property>
+		连接池最大数量
+		<property name="maxActive" value="${jdbc.maxActive}"></property>
+		连接池最大空闲
+		<property name="maxIdle" value="${jdbc.maxIdle}"></property>
+		连接池最小空闲
+		<property name="minIdle" value="${jdbc.minIdle}"></property>
+		获取连接最大等待时间
+		<property name="maxWait" value="${jdbc.maxWait}"></property>
+	</bean>
+	 -->
+	
+	<bean id="dbPasswordCallback" class="com.flong.utils.DBPasswordCallback">
+		<description>数据库连接回调密码解密</description>
+	</bean>
+	<bean id="statFilter" class="com.alibaba.druid.filter.stat.StatFilter" lazy-init="true">
+		<description>状态过滤器</description>
+		<property name="logSlowSql" value="true" />
+		<property name="mergeSql" value="true" />
+	</bean>
+	
+	
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" init-method="init" lazy-init="true">
 		<property name="driverClassName" value="${jdbc.driver}" />
 		<property name="url" value="${jdbc.url}" />
 		<property name="username" value="${jdbc.username}" />
 		<property name="password" value="${jdbc.password}" />
 		<!-- 初始化连接大小 -->
-		<property name="initialSize" value="${jdbc.initialSize}"></property>
+		<property name="initialSize" value="${jdbc.initialSize}" />
 		<!-- 连接池最大数量 -->
-		<property name="maxActive" value="${jdbc.maxActive}"></property>
-		<!-- 连接池最大空闲 -->
-		<property name="maxIdle" value="${jdbc.maxIdle}"></property>
+		<property name="maxActive" value="${jdbc.maxActive}" />
 		<!-- 连接池最小空闲 -->
-		<property name="minIdle" value="${jdbc.minIdle}"></property>
+		<property name="minIdle" value="${jdbc.minIdle}" />
 		<!-- 获取连接最大等待时间 -->
-		<property name="maxWait" value="${jdbc.maxWait}"></property>
+		<property name="maxWait" value="${jdbc.maxWait}" />
+		<!-- -->
+		<property name="defaultReadOnly" value="true" />
+		<property name="proxyFilters">
+			<list>
+				<ref bean="statFilter" />
+			</list>
+		</property>
+		<property name="filters" value="${druid.filters}" />
+		<property name="connectionProperties" value="password=${password}" /> 
+ 		<property name="passwordCallback" ref="dbPasswordCallback" />  
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<property name="validationQuery" value="SELECT 'x'" />
+		<property name="timeBetweenLogStatsMillis" value="60000" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="${minEvictableIdleTimeMillis}" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="${timeBetweenEvictionRunsMillis}" />
 	</bean>
 
 	<!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
+		<!-- 添加 mybatis-config配置上去。-->
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
 		<!-- 扫描com.flong.pojo下面的所有类，减少mybatis的mapping所有实体类的路径（parameterType），直接写一个JavaBean即可 -->
 		<property name="typeAliasesPackage" value="com.flong.pojo"/>
 		<!-- 自动扫描mapping.xml文件 -->

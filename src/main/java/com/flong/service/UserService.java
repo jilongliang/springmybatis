@@ -1,9 +1,11 @@
  package com.flong.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.flong.pojo.entity.User;
 import com.flong.pojo.vo.UserVo;
+import com.github.pagehelper.PageInfo;
 
 public interface UserService {  	
 	
@@ -36,5 +38,7 @@ public interface UserService {
 	
 	
 	String deleteSql(String id);
+
+	public PageInfo<?> query(Map<String, Object> params);
 	
 }  
