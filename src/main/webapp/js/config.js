@@ -89,8 +89,8 @@ angular.module('app')
           modules: [{
               name: 'toaster',
               files: [
-                  '../../plugins/angular/toaster.js',
-                  '../../plugins/angular/toaster.css'
+                  basePath+'plugins/angular/toaster.js',
+                  basePath+'plugins/angular/toaster.css'
               ]
           }]
       });

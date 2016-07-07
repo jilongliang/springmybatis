@@ -20,6 +20,12 @@ public class IndexController extends BaseController{
         return "index";
     }
 	
+	 
+	/*@RequestMapping("index2")
+    public String getIndexPage1() {
+        return "index2";
+    }*/
+		
 	
 	
 }

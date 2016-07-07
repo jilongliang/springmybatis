@@ -2,6 +2,7 @@ package com.flong.controller;
 
 
 
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.flong.BaseController;
 import com.flong.dao.UserMapper;
+import com.flong.pojo.entity.User;
 import com.flong.service.UserService;
 import com.flong.utils.WebUtil;
 import com.github.pagehelper.PageInfo;
@@ -45,6 +47,16 @@ public class UserController3 extends BaseController{
 	}
 	 
 	
+	@RequestMapping
+    public String getIndexPage() {
+        return "user";
+    }
+	
+	
+	@RequestMapping("/userlist.json")
+    public @ResponseBody List<User> getUserList() {
+        return userService.list();
+    }
 	
 	
 }

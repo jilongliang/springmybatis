@@ -9,6 +9,8 @@
                         http://www.springframework.org/schema/context/spring-context-3.1.xsd  
                         http://www.springframework.org/schema/mvc  
                         http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+                        
+    
 	<!-- 自动扫描该包，使SpringMVC认为包下用了@controller注解的类是控制器 -->
 	<context:component-scan base-package="com.flong.*" />
 	<!--避免IE执行AJAX时，返回JSON出现下载文件 -->
@@ -66,16 +68,14 @@
 	</bean>
 	 -->
 	
-	<bean id="velocityConfig" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
+	<!-- <bean id="velocityConfig" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
         <property name="resourceLoaderPath" value="/WEB-INF/jsp/"/>
-    </bean>
+    </bean> -->
 
 	 
-	<bean id="viewResolver" class="org.springframework.web.servlet.view.velocity.VelocityViewResolver">
-        <property name="cache" value="true"/>
-        <property name="prefix" value=""/>
-        <property name="suffix" value=".html"/>
-        <property name="exposeSpringMacroHelpers" value="true"/>
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
     </bean>
     
 	<!-- 配置文件上传，如果没有使用文件上传可以不用配置，当然如果不配，那么配置文件中也不必引入上传组件包 -->
@@ -90,7 +90,31 @@
     </bean> 
 
 
-		
+
+     <!-- 内容协商管理器  -->
+    <!--1、首先检查路径扩展名（如my.pdf）；2、其次检查Parameter（如my?format=pdf）；3、检查Accept Header-->
+    <bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+        <!-- 扩展名至mimeType的映射,即 /user.json => application/json -->
+        <property name="favorPathExtension" value="true"/>
+        <!-- 用于开启 /userinfo/123?format=json 的支持 -->
+        <property name="favorParameter" value="true"/>
+        <property name="parameterName" value="format"/>
+        <!-- 是否忽略Accept Header -->
+        <property name="ignoreAcceptHeader" value="false"/>
+
+        <property name="mediaTypes"> <!--扩展名到MIME的映射；favorPathExtension, favorParameter是true时起作用  -->
+            <value>
+                json=application/json
+                xml=application/xml
+                html=text/html
+            </value>
+        </property>
+        <!-- 默认的content type -->
+        <property name="defaultContentType" value="text/html"/>
+    </bean>
+
+  
+
 <!-- 这个映射配置主要是用来进行静态资源的访问
 	  对静态资源文件的访问， 将无法mapping到Controller的path交给default servlet handler处理 
 	<mvc:default-servlet-handler/>同等如下配置
@@ -99,6 +123,10 @@
 	<mvc:resources mapping="/**/**" location="/" />  
     <mvc:resources mapping="/WEB-INF/view/**" location="/WEB-INF/view/" />  -->
     
-  	<mvc:default-servlet-handler/> 
+    <mvc:default-servlet-handler/>
+ 	<!-- <mvc:resources mapping="/plugins/**" location="/plugins/" />
+    <mvc:resources mapping="/WEB-INF/jsp/**" location="/WEB-INF/jsp/" />
+    <mvc:resources mapping="/**/**" location="/**" />   -->
+  
     
 </beans>

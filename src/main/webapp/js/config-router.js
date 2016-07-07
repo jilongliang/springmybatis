@@ -3,13 +3,13 @@
 var app = angular.module('app')
 	.config(['$stateProvider', '$urlRouterProvider', function ($stateProvider,   $urlRouterProvider) {
             // 默认地址
-            //$urlRouterProvider.otherwise('/access/login');
+            $urlRouterProvider.otherwise('/index');
             // 状态配置
             $stateProvider
                 .state('main', {
                     abstract: true,
                     url: '',
-                    templateUrl: 'tpl/app.html'
+                    templateUrl: basePath+'/jsp/tpl/app.html'
                 })
                 .state('main.sys.user', {
                     url: '/user',
@@ -17,11 +17,11 @@ var app = angular.module('app')
                 })
                 .state('main.sys.user.list', {
                     url: '/user/list',
-                    templateUrl: 'app/sys/user/user.html',
+                    templateUrl: basePath+'jsp/tpl/sys/user/user.html',
                     controller: 'userController',
                     resolve: {
                     	deps: ['uiLoad', '$ocLazyLoad', function(uiLoad, $ocLazyLoad) {
-                            return uiLoad.load('app/sys/user/userController.js');
+                            return uiLoad.load(basePath+'jsp/tpl/sys/user/userController.js');
                         }]
                       }
                 })
