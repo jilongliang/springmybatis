@@ -5,11 +5,15 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.WebDataBinder;
@@ -20,6 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.flong.utils.HttpCode;
+import com.flong.utils.HttpUtil;
 import com.flong.utils.exceptions.BusinessException;
 
 /**
@@ -29,6 +34,16 @@ import com.flong.utils.exceptions.BusinessException;
  */
 @SuppressWarnings("all")
 public abstract class BaseController {
+	
+
+	@Autowired protected HttpServletRequest request;
+
+	@Autowired protected HttpServletResponse response;
+
+	@Autowired protected HttpSession session;
+
+	@Autowired protected ServletContext application;
+	
 	//Logger logger = Logger.getLogger(T
 	////redirect和RedirectView一样
 	public static final String Redirect="redirect:";
@@ -190,4 +205,22 @@ public abstract class BaseController {
 		byte[] bytes = JSON.toJSONBytes(modelMap, SerializerFeature.DisableCircularReferenceDetect);
 		response.getOutputStream().write(bytes);
 	}
+	
+	
+	
+	/**
+	 * 是否为 post 请求
+	 */
+	protected boolean isPost() {
+		return HttpUtil.isPost(request);
+	}
+
+
+	/**
+	 * 是否为 get 请求
+	 */
+	protected boolean isGet() {
+		return HttpUtil.isGet(request);
+	}
+
 }

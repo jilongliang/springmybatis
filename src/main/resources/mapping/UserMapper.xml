@@ -7,8 +7,10 @@
 		<result column="password" property="password" jdbcType="VARCHAR" />
 		<result column="age" property="age" jdbcType="INTEGER" />
 	</resultMap>
-
-
+	
+	<resultMap id="UserVoMap" type="com.flong.pojo.vo.UserVo"/>
+	
+	
 	<sql id="Base_Column_List">
 		id, username, password, age
 	</sql>
@@ -42,7 +44,7 @@
 		where id = #{id,jdbcType=INTEGER}
 	</select>
 
-
+   <!-- PagerHelper整合查询 -->
 	<select id="query" parameterType="java.util.Map" resultMap="BaseResultMap">
 		select
 		<include refid="Base_Column_List" />
@@ -54,7 +56,13 @@
 		</if>
 	</select>
 	
-	
+	<!-- mybatis调用存储过程 -->
+	<select id="selectUserListByPro" parameterType="java.util.Map"  statementType="CALLABLE" resultMap="UserVoMap"> 
+       <![CDATA[ 
+       	 { call pro_user (#{username,mode=IN,jdbcType=VARCHAR})}  
+       ]]>
+  </select> 
+  
 
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
 		delete from user
@@ -72,8 +80,6 @@
 			#{typeid,jdbcType=VARCHAR}
 		)
 	</insert>
-
-
 
 	<insert id="insertSelective" parameterType="com.flong.pojo.entity.User">
 		insert into user

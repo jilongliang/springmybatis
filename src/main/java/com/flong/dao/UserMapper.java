@@ -38,6 +38,8 @@ public interface UserMapper {
 	
 	
 	
+	  List<UserVo> selectUserListByPro(Map<String, Object> map);
+	
 	/****
 	 * ==============================================================通过注解和Java编写SQL进行操作数据库==============================================================
 	 * @param id

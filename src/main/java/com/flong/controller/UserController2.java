@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.flong.BaseController;
 import com.flong.dao.UserMapper;
 import com.flong.pojo.vo.UserVo;
+import com.flong.utils.web.WafRequestWrapper;
 
 
 
@@ -35,6 +36,12 @@ public class UserController2 extends BaseController{
 	 */
 	@RequestMapping(value="/listBySQL", method = {RequestMethod.POST,RequestMethod.GET})
 	public void listBySQL(HttpServletRequest request,HttpServletResponse response,Model model){
+		/**
+		 * 过滤 XSS SQL 注入
+		 */
+		//WafRequestWrapper wr = new WafRequestWrapper(request);
+		//wr.getParameter("username");
+		
 		List<UserVo> list=userMapper.listBySQL();
 		writeJson(list, response);
 	}
